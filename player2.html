@@ -3,239 +3,133 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>2D Number Table</title>
+<title>Money Betting</title>
 <link rel="stylesheet" href="styles.css">
 </head>
-<h1>Player 2</h1>
 <body>
 
-<div class="table-container">
-  <table id="grid">
-    <!-- Table rows and cells will be generated using JavaScript -->
-  </table>
-</div>
-
-<div class="bet-info">
-  <h2>Choice Your Bets</h2>
-  <input type="number" id="betAmount" min="0" placeholder="Enter your bet amount">
-</div>
-
-<div class="money-info">
-  <h2>Your Money:</h2>
-  <div id="money">1000</div>
+<div class="container">
+  <h2>Money Betting</h2>
+  <table id="grid" class="grid-container">
+    <!-- Table will be dynamically created here -->
+  <table>
+  <div class="money-info">
+    <h2>Your Money:</h2>
+    <p id="money">0</p>
+    <button id="reloadMoneyBtn" hidden></button>
+  </div>
 </div>
 
 <div class="saved-bets">
-  <h2>Luckys Number:</h2>
+  <h2>Saved Lucky Number:</h2>
   <ul id="savedBets"></ul>
 </div>
 
 <script >
-    // Array to store the saved bets
-var savedBets = [];
-// Variable to store the available money
-var money = 1000;
 
-// Function to create the table with numbers from 00 to 99
 function createTable() {
-  var grid = document.getElementById('grid');
-
-  for (var i = 0; i < 10; i++) {
-    var row = grid.insertRow();
-    for (var j = 0; j < 10; j++) {
-      var cell = row.insertCell();
-      var number = (i * 10 + j).toString().padStart(2, '0'); // Convert number to string and pad with leading zero if necessary
-      cell.textContent = number;
-      cell.addEventListener('click', function() {
-        // Place bet only if bet amount is valid and sufficient
-        var betAmount = parseInt(document.getElementById('betAmount').value);
-        if (!isNaN(betAmount) && betAmount > 0 && betAmount <= money) {
-          var bet = {
-            number: this.textContent,
-            amount: betAmount
-          };
-          savedBets.push(bet); // Add the bet to the saved bets array
-          money -= betAmount; // Deduct bet amount from available money
-          updateMoney();
-          updateSavedBets();
-        } else {
-          alert('Please enter a valid bet amount within your available money.');
+      var grid = document.getElementById('grid');
+    
+      for (var i = 0; i < 10; i++) {
+        for (var j = 0; j < 10; j++) {
+          var cell = document.createElement('div');
+          var number = (i * 10 + j).toString().padStart(2, '0'); // Convert number to string and pad with leading zero if necessary
+          cell.textContent = number;
+          cell.classList.add('cell');
+          cell.addEventListener('click', function() {
+            // Place bet only if bet amount is valid and user has enough money
+            var betAmount = parseInt(prompt('Enter your bet amount for number ' + this.textContent));
+            if (!isNaN(betAmount) && betAmount > 0 && betAmount <= userMoney) {
+              var currentTime = new Date();
+              var bet = {
+                number: this.textContent,
+                amount: betAmount,
+                time: currentTime.toLocaleTimeString(),
+                day: currentTime.toLocaleDateString()
+              };
+              savedBets.push(bet); // Add the bet to the saved bets array
+              updateSavedBets();
+              userMoney -= betAmount; // Deduct bet amount from user's money
+              document.getElementById('money').textContent = userMoney; // Update displayed money
+              localStorage.setItem('userMoney', userMoney); // Save updated money to local storage
+            } else {
+              alert('Please enter a valid bet amount within your available money.');
+            }
+          });
+          grid.appendChild(cell);
         }
+      }
+    }
+    
+    // Function to update the saved bets list
+    function updateSavedBets() {
+      var savedBetsList = document.getElementById('savedBets');
+      savedBetsList.innerHTML = ''; // Clear the existing list
+      
+      savedBets.forEach(function(bet) {
+        var listItem = document.createElement('li');
+        listItem.textContent = 'Number: ' + bet.number + ', Amount: ' + bet.amount + ', Time: ' + bet.time + ', Day: ' + bet.day;
+        savedBetsList.appendChild(listItem);
       });
     }
-  }
-}
-
-// Function to update the available money
-function updateMoney() {
-  document.getElementById('money').textContent = money;
-}
-
-// Function to update the saved bets list
-function updateSavedBets() {
-  var savedBetsList = document.getElementById('savedBets');
-  savedBetsList.innerHTML = ''; // Clear the existing list
-  
-  savedBets.forEach(function(bet, index) {
-    var listItem = document.createElement('li');
-    listItem.textContent = 'Number: ' + bet.number + ', Amount: ' + bet.amount;
-    var deleteButton = document.createElement('button');
-    deleteButton.textContent = 'Delete';
-    deleteButton.addEventListener('click', function() {
-      money += bet.amount; // Add the bet amount back to available money
-      savedBets.splice(index, 1); // Remove the bet from the saved bets array
-      updateMoney();
-      updateSavedBets();
+    
+    // Function to reload original money
+    document.getElementById('reloadMoneyBtn').addEventListener('click', function() {
+      userMoney = originalMoney;
+      document.getElementById('money').textContent = userMoney;
+      localStorage.setItem('userMoney', userMoney);
     });
-    listItem.appendChild(deleteButton);
-    savedBetsList.appendChild(listItem);
-  });
-}
+    
+    // Variable to store the user's money
+    var originalMoney = parseInt(localStorage.getItem('userMoney')) || 10000;
 
-// Call the function to create the table
-createTable();
-updateMoney(); // Update initial money display
-
-
-
-// Function to create the table with numbers from 00 to 99
-function createTable() {
-  var grid = document.getElementById('grid');
-
-  for (var i = 0; i < 10; i++) {
-    var row = grid.insertRow();
-    for (var j = 0; j < 10; j++) {
-      var cell = row.insertCell();
-      var number = (i * 10 + j).toString().padStart(2, '0'); // Convert number to string and pad with leading zero if necessary
-      cell.textContent = number;
-      cell.addEventListener('click', function() {
-        // Place bet only if bet amount is valid and sufficient
-        var betAmount = parseInt(document.getElementById('betAmount').value);
-        if (!isNaN(betAmount) && betAmount > 0 && betAmount <= money) {
-          var bet = {
-            number: this.textContent,
-            amount: betAmount,
-            time: new Date().toLocaleTimeString(),
-            day: new Date().toLocaleDateString()
-          };
-          savedBets.push(bet); // Add the bet to the saved bets array
-          updateSavedBets();
-          money -= betAmount; // Deduct bet amount from available money
-          updateMoney();
-        } else {
-          alert('Please enter a valid bet amount within your available money.');
-        }
-      });
-    }
-  }
-}
-
-// Function to update the saved bets list
-function updateSavedBets() {
-  var savedBetsList = document.getElementById('savedBets');
-  savedBetsList.innerHTML = ''; // Clear the existing list
-  
-  savedBets.forEach(function(bet) {
-    var listItem = document.createElement('li');
-    listItem.textContent = 'Number: ' + bet.number + ', Amount: ' + bet.amount + ', Time: ' + bet.time + ', Day: ' + bet.day;
-    savedBetsList.appendChild(listItem);
-  });
-}
-
-// Function to update the available money
-function updateMoney() {
-  document.getElementById('money').textContent = money;
-}
-
-// Function to place a bet
-function placeBet() {
-  var betAmount = parseInt(document.getElementById('betAmount').value);
-  if (!isNaN(betAmount) && betAmount > 0 && betAmount <= money) {
-    var bet = {
-      number: 'Your choice',
-      amount: betAmount,
-      time: new Date().toLocaleTimeString(),
-      day: new Date().toLocaleDateString()
-    };
-    savedBets.push(bet); // Add the bet to the saved bets array
-    updateSavedBets();
-    money -= betAmount; // Deduct bet amount from available money
-    updateMoney();
-  } else {
-    alert('Please enter a valid bet amount within your available money.');
-  }
-}
-
-// Variable to store the saved bets
-var savedBets = [];
-// Variable to store the available money
-var money = 10000;
-
-// Call the function to create the table
-createTable();
-updateMoney(); // Update initial money display
-
-</script>
+    var userMoney = originalMoney;
+    
+    // Call the function to create the table
+    createTable();
+    
+    // Variable to store the saved bets
+    var savedBets = [];
+  </script>
 </body>
 <style>
-    body {
-      background-color: #d7d411;
-  font-family: Arial, sans-serif;
+body {
+    font-family: Arial, sans-serif;
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 20px;
 }
 
-.table-container {
-  width: 350px;
-}
-
-#grid {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-#grid td {
-  width: 50px;
-  height: 50px;
-  border: 1px solid #ccc;
+.container {
+    width: 350px;
   text-align: center;
-  cursor: pointer;
+}
+
+.grid-container {
+    border: 1px solid black;
+    width: 100%;
+  border-collapse: collapse;
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 15px;
+  background-color: rgb(139, 207, 207);
 }
 
 #grid td:hover {
   background-color: #f0f0f0;
 }
 
-.bet-info {
-  margin-top: 20px;
-  text-align: center;
-}
-
-.bet-info h2 {
-  margin-bottom: 10px;
-}
-
-#betAmount {
-  padding: 8px;
-  font-size: 16px;
-  margin-right: 10px;
-}
-
-button {
-  padding: 8px 20px;
-  font-size: 16px;
-  background-color: #007bff;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
 .money-info {
-  margin-top: 20px;
   text-align: center;
+  margin-top: 20px;
+}
+#grid td {
+  width: 50px;
+  height: 50px;
+  border: 1px solid #ccc;
+  text-align: center;
+  cursor: pointer;
 }
 
 .money-info h2 {
@@ -250,18 +144,5 @@ button {
 .saved-bets h2 {
   margin-bottom: 10px;
 }
-
-.saved-bets ul {
-  list-style-type: none;
-  padding: 0;
-}
-
-.saved-bets li {
-  margin-bottom: 5px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
 </style>
 </html>
